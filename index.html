@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VELO — Sport Essentials</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ==================== NAVBAR ==================== -->
+  <nav class="navbar">
+    <a href="#" class="nav-logo">
+      VELO<span class="dot"></span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#shop" class="active">Shop</a></li>
+      <li><a href="#categories">Categories</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button class="btn-icon" aria-label="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+      <button class="btn-icon cart-btn" onclick="openCart()" aria-label="Cart">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="cart-count">0</span>
+      </button>
+      <div class="menu-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO ==================== -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="hero-badge">🔥 New Spring Collection 2026</div>
+      <h1>Elevate Your<br><span class="text-accent">Performance</span></h1>
+      <p>Premium sport gear designed for athletes who refuse to compromise. Minimalist design. Maximum performance.</p>
+      <div class="hero-actions">
+        <a href="#shop" class="btn btn-primary">Shop Now</a>
+        <a href="#categories" class="btn btn-outline">Explore</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value">50K+</div>
+          <div class="hero-stat-label">Athletes</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">200+</div>
+          <div class="hero-stat-label">Products</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">4.9</div>
+          <div class="hero-stat-label">Rating</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">30</div>
+          <div class="hero-stat-label">Countries</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== CATEGORIES ==================== -->
+  <section id="categories" class="section">
+    <div class="section-header fade-in">
+      <h2>Shop by Sport</h2>
+      <p>Find exactly what you need for your discipline</p>
+    </div>
+    <div class="categories-grid">
+      <div class="category-card fade-in" onclick="document.querySelector('[data-filter=running]').click(); document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+        <div class="category-bg" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)"></div>
+        <div class="category-overlay"></div>
+        <div class="category-info">
+          <h3>🏃 Running</h3>
+          <span>Shoes, tights, accessories</span>
+        </div>
+      </div>
+      <div class="category-card fade-in" onclick="document.querySelector('[data-filter=training]').click(); document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+        <div class="category-bg" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 100%)"></div>
+        <div class="category-overlay"></div>
+        <div class="category-info">
+          <h3>💪 Training</h3>
+          <span>Apparel, gear, wearables</span>
+        </div>
+      </div>
+      <div class="category-card fade-in" onclick="document.querySelector('[data-filter=yoga]').click(); document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+        <div class="category-bg" style="background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%)"></div>
+        <div class="category-overlay"></div>
+        <div class="category-info">
+          <h3>🧘 Yoga</h3>
+          <span>Mats, blocks, cushions</span>
+        </div>
+      </div>
+      <div class="category-card fade-in" onclick="document.querySelector('[data-filter=outdoor]').click(); document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+        <div class="category-bg" style="background: linear-gradient(135deg, #0a1628 0%, #1a2a1a 100%)"></div>
+        <div class="category-overlay"></div>
+        <div class="category-info">
+          <h3>🏔️ Outdoor</h3>
+          <span>Jackets, packs, poles</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PRODUCTS ==================== -->
+  <section id="shop" class="section">
+    <div class="section-header fade-in">
+      <h2>Featured Products</h2>
+      <p>Handpicked gear for peak performance</p>
+    </div>
+
+    <div class="filters fade-in">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="running">Running</button>
+      <button class="filter-btn" data-filter="training">Training</button>
+      <button class="filter-btn" data-filter="yoga">Yoga</button>
+      <button class="filter-btn" data-filter="outdoor">Outdoor</button>
+    </div>
+
+    <div class="products-grid">
+      <!-- Products rendered by JS -->
+    </div>
+  </section>
+
+  <!-- ==================== FEATURES / ABOUT ==================== -->
+  <section id="about" class="section">
+    <div class="section-header fade-in">
+      <h2>Why VELO</h2>
+      <p>Built for athletes, by athletes</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon">⚡</div>
+        <h3>Performance First</h3>
+        <p>Every product tested by pro athletes. We only sell gear that enhances your performance.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">🌱</div>
+        <h3>Sustainable Materials</h3>
+        <p>80% of our products use recycled or eco-friendly materials. Performance without compromise.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">🚚</div>
+        <h3>Free Express Shipping</h3>
+        <p>Free 2-day delivery on orders over $99. Free returns within 30 days, no questions asked.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">🏆</div>
+        <h3>Lifetime Warranty</h3>
+        <p>We stand behind our products. If it breaks, we replace it. Simple as that.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== CTA BANNER ==================== -->
+  <section class="section">
+    <div class="cta-banner fade-in">
+      <h2>Join the Movement</h2>
+      <p>Get 15% off your first order and early access to new drops</p>
+      <a href="#contact" class="btn">Get 15% Off</a>
+    </div>
+  </section>
+
+  <!-- ==================== NEWSLETTER ==================== -->
+  <section id="contact" class="section">
+    <div class="newsletter fade-in">
+      <h2>Stay in the Loop</h2>
+      <p class="text-muted" style="margin-top:12px">New drops, athlete stories, and exclusive deals. No spam.</p>
+      <form class="newsletter-form" onsubmit="handleNewsletter(event)">
+        <input type="email" class="newsletter-input" placeholder="Enter your email" required>
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo">VELO<span class="dot"></span></div>
+        <p>Premium sport essentials for athletes who demand more. Minimalist design meets maximum performance.</p>
+        <div class="footer-social">
+          <button class="btn-icon" aria-label="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></svg>
+          </button>
+          <button class="btn-icon" aria-label="Twitter">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+          </button>
+          <button class="btn-icon" aria-label="YouTube">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17z"/><path d="m10 15 5-3-5-3z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#shop">Running</a></li>
+          <li><a href="#shop">Training</a></li>
+          <li><a href="#shop">Yoga</a></li>
+          <li><a href="#shop">Outdoor</a></li>
+          <li><a href="#shop">Sale</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Shipping & Returns</a></li>
+          <li><a href="#">Size Guide</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Track Order</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#">Sustainability</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+          <li><a href="#">Athletes</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 VELO. All rights reserved.</span>
+      <span>
+        <a href="#">Privacy</a> &nbsp;·&nbsp; <a href="#">Terms</a>
+      </span>
+    </div>
+  </footer>
+
+  <!-- ==================== CART SIDEBAR ==================== -->
+  <div class="cart-overlay" aria-hidden="true"></div>
+  <aside class="cart-sidebar">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button class="cart-close" onclick="closeCart()" aria-label="Close cart">✕</button>
+    </div>
+    <div class="cart-items">
+      <!-- Rendered by JS -->
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span class="cart-total-label">Total</span>
+        <span class="cart-total-value">$0</span>
+      </div>
+      <button class="btn btn-primary cart-checkout-btn" onclick="showToast('Checkout coming soon!')">
+        Checkout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ==================== PRODUCT MODAL ==================== -->
+  <div class="modal-overlay" aria-hidden="true">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    <div class="modal">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
