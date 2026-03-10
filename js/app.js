@@ -499,7 +499,7 @@ function renderProductCards(grid, items) {
       <div class="product-image" onclick="openModal(${p.id})">
         <img src="${p.image}" alt="${p.name}" loading="lazy">
         ${p.badge ? `<span class="product-badge badge-${p.badge}">${p.badge}</span>` : ''}
-        <button class="product-wishlist" onclick="event.stopPropagation()">♡</button>
+        <button class="product-wishlist" onclick="toggleWishlist(${p.id}, event)">${wishlist.includes(p.id) ? '♥' : '♡'}</button>
       </div>
       <div class="product-info">
         <div class="product-category">${p.category}</div>
@@ -688,7 +688,7 @@ function openModal(productId) {
         </div>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-primary" style="flex:1" onclick="addToCart(${product.id}); closeModal();">Add to Cart — $${product.price}</button>
+        <button class="btn btn-primary" style="flex:1" onclick="addToCartWithSize(${product.id}); closeModal();">Add to Cart — $${product.price}</button>
         <button class="btn-icon">♡</button>
       </div>
     </div>
@@ -763,6 +763,8 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeCart();
     closeModal();
+    closeSearch();
+    if ($('.checkout-overlay.open')) checkoutBack();
   }
 });
 
@@ -775,3 +777,350 @@ function handleNewsletter(e) {
     input.value = '';
   }
 }
+
+// ——— ADD TO CART WITH SIZE (from modal) ———
+function addToCartWithSize(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+
+  const selectedBtn = document.querySelector('.modal .size-btn.selected');
+  const size = selectedBtn ? selectedBtn.textContent : product.sizes[0];
+
+  const existing = cart.find(item => item.id === productId && item.size === size);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ id: productId, qty: 1, size });
+  }
+
+  saveCart();
+  updateCartUI();
+  showToast(`${product.name} (${size}) added to cart`);
+}
+
+// ——— WISHLIST ———
+let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+function toggleWishlist(productId, event) {
+  if (event) event.stopPropagation();
+  const idx = wishlist.indexOf(productId);
+  if (idx > -1) {
+    wishlist.splice(idx, 1);
+    showToast('Removed from wishlist');
+  } else {
+    wishlist.push(productId);
+    showToast('Added to wishlist ♡');
+  }
+  localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  renderProducts();
+}
+
+// ============================================
+//   CHECKOUT
+// ============================================
+let checkoutStep = 1;
+
+function openCheckout() {
+  if (cart.length === 0) {
+    showToast('Your cart is empty');
+    return;
+  }
+  closeCart();
+  checkoutStep = 1;
+  renderCheckoutStep1();
+  updateCheckoutProgress();
+  updateCheckoutTotals();
+
+  const overlay = $('.checkout-overlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCheckout() {
+  $('.checkout-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function checkoutBack() {
+  if (checkoutStep <= 1) {
+    closeCheckout();
+    return;
+  }
+  goToStep(checkoutStep - 1);
+}
+
+function goToStep(n) {
+  checkoutStep = n;
+
+  // Activate step
+  $$('.checkout-step').forEach(s => s.classList.remove('active'));
+  const step = $(`.checkout-step[data-step="${n}"]`);
+  if (step) step.classList.add('active');
+
+  updateCheckoutProgress();
+  updateCheckoutTotals();
+
+  // Scroll to top of checkout
+  $('.checkout-overlay').scrollTop = 0;
+}
+
+function updateCheckoutProgress() {
+  $$('.progress-step').forEach(el => {
+    const s = parseInt(el.dataset.step);
+    el.classList.remove('active', 'done');
+    if (s === checkoutStep) el.classList.add('active');
+    if (s < checkoutStep) el.classList.add('done');
+  });
+
+  $$('.progress-line').forEach((line, i) => {
+    line.classList.toggle('filled', i < checkoutStep - 1);
+  });
+}
+
+function updateCheckoutTotals() {
+  const subtotal = getCartTotal();
+  const shipping = subtotal >= 99 ? 0 : 9.99;
+  const tax = Math.round(subtotal * 0.08 * 100) / 100;
+  const total = Math.round((subtotal + shipping + tax) * 100) / 100;
+
+  $$('.summary-subtotal').forEach(el => el.textContent = `$${subtotal}`);
+  $$('.summary-shipping').forEach(el => el.textContent = shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`);
+  $$('.summary-tax').forEach(el => el.textContent = `$${tax.toFixed(2)}`);
+  $$('.summary-total-value').forEach(el => el.textContent = `$${total.toFixed(2)}`);
+  $$('.place-order-total').forEach(el => el.textContent = `$${total.toFixed(2)}`);
+}
+
+function renderCheckoutStep1() {
+  const container = $('.checkout-order-items');
+  if (!container) return;
+
+  container.innerHTML = cart.map(item => {
+    const p = products.find(pr => pr.id === item.id);
+    if (!p) return '';
+    return `
+      <div class="checkout-item">
+        <div class="checkout-item-image"><img src="${p.image}" alt="${p.name}"></div>
+        <div class="checkout-item-details">
+          <div class="checkout-item-name">${p.name}</div>
+          <div class="checkout-item-meta">Size: ${item.size} · Qty: ${item.qty}</div>
+        </div>
+        <div class="checkout-item-price">$${p.price * item.qty}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ——— VALIDATION ———
+function validateAndGoToPayment() {
+  const fields = ['ship-fname', 'ship-lname', 'ship-email', 'ship-address', 'ship-city', 'ship-zip', 'ship-country'];
+  let valid = true;
+
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const empty = !el.value.trim();
+    el.classList.toggle('error', empty);
+    if (empty) valid = false;
+  });
+
+  const email = document.getElementById('ship-email');
+  if (email && email.value && !/\S+@\S+\.\S+/.test(email.value)) {
+    email.classList.add('error');
+    valid = false;
+  }
+
+  if (!valid) {
+    showToast('Please fill in all required fields');
+    return;
+  }
+
+  goToStep(3);
+}
+
+function validateAndPlaceOrder() {
+  const fields = ['pay-card', 'pay-expiry', 'pay-cvv', 'pay-name'];
+  let valid = true;
+
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const empty = !el.value.trim();
+    el.classList.toggle('error', empty);
+    if (empty) valid = false;
+  });
+
+  const card = document.getElementById('pay-card');
+  if (card && card.value.replace(/\s/g, '').length < 16) {
+    card.classList.add('error');
+    valid = false;
+  }
+
+  if (!valid) {
+    showToast('Please fill in all payment details');
+    return;
+  }
+
+  placeOrder();
+}
+
+function placeOrder() {
+  // Generate order ID
+  const orderId = 'VL-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+  // Show confirmation
+  goToStep(4);
+
+  const orderIdEl = $('.confirmation-order-id');
+  if (orderIdEl) orderIdEl.textContent = `Order: ${orderId}`;
+
+  const detailsEl = $('.confirmation-details');
+  if (detailsEl) {
+    const subtotal = getCartTotal();
+    const shipping = subtotal >= 99 ? 0 : 9.99;
+    const tax = Math.round(subtotal * 0.08 * 100) / 100;
+    const total = Math.round((subtotal + shipping + tax) * 100) / 100;
+
+    detailsEl.innerHTML = `
+      <div class="checkout-summary" style="margin-top:16px">
+        <div class="summary-row"><span>Items (${cart.reduce((s, i) => s + i.qty, 0)})</span><span>$${subtotal}</span></div>
+        <div class="summary-row"><span>Shipping</span><span>${shipping === 0 ? 'Free' : '$' + shipping.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Tax</span><span>$${tax.toFixed(2)}</span></div>
+        <div class="summary-row summary-total"><span>Total Paid</span><span>$${total.toFixed(2)}</span></div>
+      </div>
+      <p class="text-muted" style="text-align:center;margin-top:16px;font-size:0.85rem">
+        Confirmation sent to <strong>${document.getElementById('ship-email')?.value || 'your email'}</strong>
+      </p>
+    `;
+  }
+}
+
+function finishOrder() {
+  // Clear cart
+  cart = [];
+  saveCart();
+  updateCartUI();
+
+  // Reset forms
+  const shippingForm = document.getElementById('shipping-form');
+  const paymentForm = document.getElementById('payment-form');
+  if (shippingForm) shippingForm.reset();
+  if (paymentForm) paymentForm.reset();
+
+  // Reset card preview
+  const cardNumDisplay = $('.card-number-display');
+  if (cardNumDisplay) cardNumDisplay.textContent = '•••• •••• •••• ••••';
+  const cardNameDisplay = $('.card-name-display');
+  if (cardNameDisplay) cardNameDisplay.textContent = 'YOUR NAME';
+  const cardExpiryDisplay = $('.card-expiry-display');
+  if (cardExpiryDisplay) cardExpiryDisplay.textContent = 'MM/YY';
+
+  closeCheckout();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('Thank you for your order!');
+}
+
+// ——— CARD INPUT FORMATTING ———
+function formatCardInput(el) {
+  let val = el.value.replace(/\D/g, '').substring(0, 16);
+  el.value = val.replace(/(.{4})/g, '$1 ').trim();
+  updateCardPreview();
+}
+
+function formatExpiryInput(el) {
+  let val = el.value.replace(/\D/g, '').substring(0, 4);
+  if (val.length >= 2) {
+    val = val.substring(0, 2) + '/' + val.substring(2);
+  }
+  el.value = val;
+  updateCardPreview();
+}
+
+function updateCardPreview() {
+  const card = document.getElementById('pay-card');
+  const name = document.getElementById('pay-name');
+  const expiry = document.getElementById('pay-expiry');
+  const cvv = document.getElementById('pay-cvv');
+
+  const numDisplay = $('.card-number-display');
+  const nameDisplay = $('.card-name-display');
+  const expiryDisplay = $('.card-expiry-display');
+  const cvvDisplay = $('.card-cvv-display');
+
+  if (numDisplay && card) {
+    const digits = card.value.replace(/\s/g, '');
+    let display = '';
+    for (let i = 0; i < 16; i++) {
+      if (i > 0 && i % 4 === 0) display += ' ';
+      display += digits[i] || '•';
+    }
+    numDisplay.textContent = display;
+  }
+  if (nameDisplay && name) nameDisplay.textContent = name.value.toUpperCase() || 'YOUR NAME';
+  if (expiryDisplay && expiry) expiryDisplay.textContent = expiry.value || 'MM/YY';
+  if (cvvDisplay && cvv) cvvDisplay.textContent = cvv.value ? cvv.value.replace(/./g, '•') : '•••';
+}
+
+function flipCard(toBack) {
+  const inner = $('.card-preview-inner');
+  if (inner) inner.classList.toggle('flipped', toBack);
+}
+
+// ============================================
+//   SEARCH
+// ============================================
+function openSearch() {
+  const overlay = $('.search-overlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    const input = $('.search-input');
+    if (input) { input.value = ''; input.focus(); }
+  }, 100);
+  // Show all products initially
+  renderSearchResults('');
+}
+
+function closeSearch() {
+  $('.search-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleSearch(query) {
+  renderSearchResults(query);
+}
+
+function renderSearchResults(query) {
+  const container = $('.search-results');
+  if (!container) return;
+
+  const q = query.toLowerCase().trim();
+  const results = q
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.desc.toLowerCase().includes(q)
+      )
+    : products.slice(0, 8);
+
+  if (q && results.length === 0) {
+    container.innerHTML = `<div class="search-empty">No products found for "${query}"</div>`;
+    return;
+  }
+
+  container.innerHTML = results.map(p => `
+    <div class="search-result-item" onclick="closeSearch(); openModal(${p.id})">
+      <div class="search-result-img"><img src="${p.image}" alt="${p.name}" loading="lazy"></div>
+      <div class="search-result-info">
+        <div class="search-result-name">${p.name}</div>
+        <div class="search-result-cat">${p.category}</div>
+      </div>
+      <div class="search-result-price">$${p.price}</div>
+    </div>
+  `).join('');
+}
+
+// Search also closes on ESC (already handled) and click outside
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('search-overlay')) closeSearch();
+  if (e.target.classList.contains('checkout-overlay')) closeCheckout();
+});

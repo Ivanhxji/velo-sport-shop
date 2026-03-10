@@ -25,7 +25,7 @@
     </ul>
 
     <div class="nav-actions">
-      <button class="btn-icon" aria-label="Search">
+      <button class="btn-icon" onclick="openSearch()" aria-label="Search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </button>
       <button class="btn-icon cart-btn" onclick="openCart()" aria-label="Cart">
@@ -267,7 +267,7 @@
         <span class="cart-total-label">Total</span>
         <span class="cart-total-value">$0</span>
       </div>
-      <button class="btn btn-primary cart-checkout-btn" onclick="showToast('Checkout coming soon!')">
+      <button class="btn btn-primary cart-checkout-btn" onclick="openCheckout()">
         Checkout
       </button>
     </div>
@@ -278,6 +278,186 @@
     <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
     <div class="modal">
       <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ==================== CHECKOUT OVERLAY ==================== -->
+  <div class="checkout-overlay" aria-hidden="true">
+    <div class="checkout-container">
+      <div class="checkout-header">
+        <button class="checkout-back" onclick="checkoutBack()" aria-label="Back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <h3 class="checkout-title">Checkout</h3>
+        <button class="cart-close" onclick="closeCheckout()" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="checkout-progress">
+        <div class="progress-step active" data-step="1"><span>1</span><small>Order</small></div>
+        <div class="progress-line"><div class="progress-fill"></div></div>
+        <div class="progress-step" data-step="2"><span>2</span><small>Shipping</small></div>
+        <div class="progress-line"><div class="progress-fill"></div></div>
+        <div class="progress-step" data-step="3"><span>3</span><small>Payment</small></div>
+        <div class="progress-line"><div class="progress-fill"></div></div>
+        <div class="progress-step" data-step="4"><span>4</span><small>Done</small></div>
+      </div>
+
+      <!-- Steps Container -->
+      <div class="checkout-steps">
+        <!-- Step 1: Order Summary -->
+        <div class="checkout-step active" data-step="1">
+          <div class="checkout-order-items">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="checkout-summary">
+            <div class="summary-row"><span>Subtotal</span><span class="summary-subtotal">$0</span></div>
+            <div class="summary-row"><span>Shipping</span><span class="summary-shipping">Free</span></div>
+            <div class="summary-row"><span>Tax (8%)</span><span class="summary-tax">$0</span></div>
+            <div class="summary-row summary-total"><span>Total</span><span class="summary-total-value">$0</span></div>
+          </div>
+          <button class="btn btn-primary checkout-next-btn" onclick="goToStep(2)">Continue to Shipping</button>
+        </div>
+
+        <!-- Step 2: Shipping -->
+        <div class="checkout-step" data-step="2">
+          <form class="checkout-form" id="shipping-form" onsubmit="return false">
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name *</label>
+                <input type="text" id="ship-fname" required placeholder="John">
+              </div>
+              <div class="form-group">
+                <label>Last Name *</label>
+                <input type="text" id="ship-lname" required placeholder="Doe">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email *</label>
+                <input type="email" id="ship-email" required placeholder="john@example.com">
+              </div>
+              <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="ship-phone" placeholder="+1 (555) 000-0000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Address *</label>
+              <input type="text" id="ship-address" required placeholder="123 Main Street">
+            </div>
+            <div class="form-row form-row-3">
+              <div class="form-group">
+                <label>City *</label>
+                <input type="text" id="ship-city" required placeholder="New York">
+              </div>
+              <div class="form-group">
+                <label>State</label>
+                <input type="text" id="ship-state" placeholder="NY">
+              </div>
+              <div class="form-group">
+                <label>ZIP *</label>
+                <input type="text" id="ship-zip" required placeholder="10001">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Country *</label>
+              <select id="ship-country" required>
+                <option value="">Select country</option>
+                <option value="US" selected>United States</option>
+                <option value="CA">Canada</option>
+                <option value="GB">United Kingdom</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="AU">Australia</option>
+                <option value="JP">Japan</option>
+              </select>
+            </div>
+          </form>
+          <button class="btn btn-primary checkout-next-btn" onclick="validateAndGoToPayment()">Continue to Payment</button>
+        </div>
+
+        <!-- Step 3: Payment -->
+        <div class="checkout-step" data-step="3">
+          <!-- Visual Card -->
+          <div class="card-preview">
+            <div class="card-preview-inner">
+              <div class="card-front">
+                <div class="card-chip"></div>
+                <div class="card-number-display">•••• •••• •••• ••••</div>
+                <div class="card-bottom">
+                  <div><small>CARDHOLDER</small><div class="card-name-display">YOUR NAME</div></div>
+                  <div><small>EXPIRES</small><div class="card-expiry-display">MM/YY</div></div>
+                </div>
+              </div>
+              <div class="card-back">
+                <div class="card-stripe"></div>
+                <div class="card-cvv-area">
+                  <small>CVV</small>
+                  <div class="card-cvv-display">•••</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form class="checkout-form" id="payment-form" onsubmit="return false">
+            <div class="form-group">
+              <label>Card Number *</label>
+              <input type="text" id="pay-card" required placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCardInput(this)">
+            </div>
+            <div class="form-row form-row-3">
+              <div class="form-group">
+                <label>Expiry *</label>
+                <input type="text" id="pay-expiry" required placeholder="MM/YY" maxlength="5" oninput="formatExpiryInput(this)">
+              </div>
+              <div class="form-group">
+                <label>CVV *</label>
+                <input type="text" id="pay-cvv" required placeholder="123" maxlength="4" onfocus="flipCard(true)" onblur="flipCard(false)" oninput="updateCardPreview()">
+              </div>
+              <div class="form-group">
+                <label>Name on Card *</label>
+                <input type="text" id="pay-name" required placeholder="John Doe" oninput="updateCardPreview()">
+              </div>
+            </div>
+          </form>
+          <div class="checkout-summary checkout-summary-mini">
+            <div class="summary-row summary-total"><span>Total</span><span class="summary-total-value">$0</span></div>
+          </div>
+          <button class="btn btn-primary checkout-next-btn" onclick="validateAndPlaceOrder()">
+            Place Order — <span class="place-order-total">$0</span>
+          </button>
+        </div>
+
+        <!-- Step 4: Confirmation -->
+        <div class="checkout-step" data-step="4">
+          <div class="confirmation">
+            <div class="confirmation-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#38a169" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h2>Order Confirmed!</h2>
+            <p class="text-muted">Thank you for your purchase</p>
+            <div class="confirmation-order-id"></div>
+            <div class="confirmation-details">
+              <!-- Rendered by JS -->
+            </div>
+            <button class="btn btn-primary" onclick="finishOrder()" style="margin-top:32px">Continue Shopping</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SEARCH OVERLAY ==================== -->
+  <div class="search-overlay" aria-hidden="true">
+    <div class="search-container">
+      <div class="search-input-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" class="search-input" placeholder="Search products..." oninput="handleSearch(this.value)" autofocus>
+        <button class="search-close" onclick="closeSearch()">✕</button>
+      </div>
+      <div class="search-results">
+        <!-- Rendered by JS -->
+      </div>
     </div>
   </div>
 
