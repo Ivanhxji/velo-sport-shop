@@ -430,6 +430,13 @@ function initFilters() {
   });
 }
 
+// ——— FILTER BY CATEGORY (from category cards) ———
+function filterByCategory(cat) {
+  const btn = document.querySelector(`[data-filter=${cat}]`);
+  if (btn) btn.click();
+  document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
+}
+
 // ——— RENDER COLLECTIONS ———
 function renderCollections() {
   const container = $('.collections-scroll');
@@ -519,11 +526,9 @@ function renderProductCards(grid, items) {
     </div>
   `).join('');
 
-  // Animate cards in
+  // Animate cards in — single RAF, CSS handles stagger via transition-delay
   requestAnimationFrame(() => {
-    grid.querySelectorAll('.product-card').forEach((card, i) => {
-      setTimeout(() => card.classList.add('visible'), i * 50);
-    });
+    grid.querySelectorAll('.product-card').forEach(card => card.classList.add('visible'));
   });
 }
 
@@ -531,18 +536,18 @@ function renderProductCards(grid, items) {
 function addToCart(productId) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
+  const size = product.sizes[0];
 
-  const existing = cart.find(item => item.id === productId);
+  const existing = cart.find(item => item.id === productId && item.size === size);
   if (existing) {
     existing.qty++;
   } else {
-    cart.push({ id: productId, qty: 1, size: product.sizes[0] });
+    cart.push({ id: productId, qty: 1, size });
   }
 
   saveCart();
   updateCartUI();
 
-  // Button animation
   const btn = document.querySelector(`.product-card[data-id="${productId}"] .product-add-btn`);
   if (btn) {
     btn.classList.add('added');
@@ -556,20 +561,20 @@ function addToCart(productId) {
   showToast(`${product.name} added to cart`);
 }
 
-function removeFromCart(productId) {
-  cart = cart.filter(item => item.id !== productId);
+function removeFromCart(productId, size) {
+  cart = cart.filter(item => !(item.id === productId && item.size === size));
   saveCart();
   updateCartUI();
   renderCartItems();
 }
 
-function updateQty(productId, delta) {
-  const item = cart.find(i => i.id === productId);
+function updateQty(productId, size, delta) {
+  const item = cart.find(i => i.id === productId && i.size === size);
   if (!item) return;
 
   item.qty += delta;
   if (item.qty <= 0) {
-    removeFromCart(productId);
+    removeFromCart(productId, size);
     return;
   }
 
@@ -637,13 +642,14 @@ function renderCartItems() {
           <div class="cart-item-details">
             <div class="cart-item-name">${product.name}</div>
             <div class="cart-item-price">$${product.price}</div>
+            <div class="cart-item-meta" style="font-size:0.75rem;color:var(--text-muted)">${item.size}</div>
             <div class="cart-item-qty">
-              <button class="qty-btn" onclick="updateQty(${item.id}, -1)">−</button>
+              <button class="qty-btn" onclick="updateQty(${item.id}, '${item.size}', -1)">−</button>
               <span>${item.qty}</span>
-              <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+              <button class="qty-btn" onclick="updateQty(${item.id}, '${item.size}', 1)">+</button>
             </div>
           </div>
-          <button class="cart-item-remove" onclick="removeFromCart(${item.id})">✕</button>
+          <button class="cart-item-remove" onclick="removeFromCart(${item.id}, '${item.size}')">✕</button>
         </div>
       `;
     }).join('');
@@ -689,7 +695,7 @@ function openModal(productId) {
       </div>
       <div class="modal-actions">
         <button class="btn btn-primary" style="flex:1" onclick="addToCartWithSize(${product.id}); closeModal();">Add to Cart — $${product.price}</button>
-        <button class="btn-icon">♡</button>
+        <button class="btn-icon" onclick="toggleWishlist(${product.id})">${wishlist.includes(product.id) ? '♥' : '♡'}</button>
       </div>
     </div>
   `;
@@ -740,32 +746,33 @@ function initScrollAnimations() {
   $$('.fade-in').forEach(el => observer.observe(el));
 }
 
-// ——— SMOOTH SCROLL FOR NAV LINKS ———
+// ——— GLOBAL EVENT HANDLERS ———
 document.addEventListener('click', (e) => {
+  // Smooth scroll for anchor links
   const anchor = e.target.closest('a[href^="#"]');
-  if (!anchor) return;
-  e.preventDefault();
-  const target = document.querySelector(anchor.getAttribute('href'));
-  if (target) {
-    target.scrollIntoView({ behavior: 'smooth' });
-    $('.nav-links')?.classList.remove('mobile-open');
+  if (anchor) {
+    const href = anchor.getAttribute('href');
+    if (href.length > 1) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+        $('.nav-links')?.classList.remove('mobile-open');
+      }
+    }
   }
-});
-
-// ——— CLOSE OVERLAYS ON CLICK OUTSIDE ———
-document.addEventListener('click', (e) => {
+  // Close overlays on backdrop click
   if (e.target.classList.contains('cart-overlay')) closeCart();
   if (e.target.classList.contains('modal-overlay')) closeModal();
+  if (e.target.classList.contains('search-overlay')) closeSearch();
 });
 
-// ——— ESCAPE KEY ———
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeCart();
-    closeModal();
-    closeSearch();
-    if ($('.checkout-overlay.open')) checkoutBack();
-  }
+  if (e.key !== 'Escape') return;
+  if ($('.search-overlay.open')) { closeSearch(); return; }
+  if ($('.checkout-overlay.open')) { checkoutBack(); return; }
+  if ($('.modal-overlay.open')) { closeModal(); return; }
+  if ($('.cart-sidebar.open')) { closeCart(); return; }
 });
 
 // ——— NEWSLETTER ———
@@ -804,15 +811,19 @@ let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
 function toggleWishlist(productId, event) {
   if (event) event.stopPropagation();
   const idx = wishlist.indexOf(productId);
-  if (idx > -1) {
-    wishlist.splice(idx, 1);
-    showToast('Removed from wishlist');
-  } else {
+  const added = idx === -1;
+  if (added) {
     wishlist.push(productId);
-    showToast('Added to wishlist ♡');
+  } else {
+    wishlist.splice(idx, 1);
   }
   localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  renderProducts();
+
+  // Update only the specific button(s) — no full re-render
+  document.querySelectorAll(`.product-card[data-id="${productId}"] .product-wishlist`).forEach(btn => {
+    btn.textContent = added ? '♥' : '♡';
+  });
+  showToast(added ? 'Added to wishlist' : 'Removed from wishlist');
 }
 
 // ============================================
@@ -1085,10 +1096,6 @@ function closeSearch() {
   document.body.style.overflow = '';
 }
 
-function handleSearch(query) {
-  renderSearchResults(query);
-}
-
 function renderSearchResults(query) {
   const container = $('.search-results');
   if (!container) return;
@@ -1119,8 +1126,3 @@ function renderSearchResults(query) {
   `).join('');
 }
 
-// Search also closes on ESC (already handled) and click outside
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('search-overlay')) closeSearch();
-  if (e.target.classList.contains('checkout-overlay')) closeCheckout();
-});

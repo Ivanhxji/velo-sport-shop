@@ -89,7 +89,7 @@
       <p>Find exactly what you need for your discipline</p>
     </div>
     <div class="categories-grid">
-      <div class="category-card fade-in" onclick="document.querySelector('[data-filter=running]').click(); document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+      <div class="category-card fade-in" onclick="filterByCategory('running')">
         <div class="category-bg" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)"></div>
         <div class="category-overlay"></div>
         <div class="category-info">
@@ -97,7 +97,7 @@
           <span>Shoes, tights, accessories</span>
         </div>
       </div>
-      <div class="category-card fade-in" onclick="document.querySelector('[data-filter=training]').click(); document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+      <div class="category-card fade-in" onclick="filterByCategory('training')">
         <div class="category-bg" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 100%)"></div>
         <div class="category-overlay"></div>
         <div class="category-info">
@@ -105,7 +105,7 @@
           <span>Apparel, gear, wearables</span>
         </div>
       </div>
-      <div class="category-card fade-in" onclick="document.querySelector('[data-filter=yoga]').click(); document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+      <div class="category-card fade-in" onclick="filterByCategory('yoga')">
         <div class="category-bg" style="background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 100%)"></div>
         <div class="category-overlay"></div>
         <div class="category-info">
@@ -113,7 +113,7 @@
           <span>Mats, blocks, cushions</span>
         </div>
       </div>
-      <div class="category-card fade-in" onclick="document.querySelector('[data-filter=outdoor]').click(); document.getElementById('shop').scrollIntoView({behavior:'smooth'})">
+      <div class="category-card fade-in" onclick="filterByCategory('outdoor')">
         <div class="category-bg" style="background: linear-gradient(135deg, #0a1628 0%, #1a2a1a 100%)"></div>
         <div class="category-overlay"></div>
         <div class="category-info">
@@ -452,7 +452,7 @@
     <div class="search-container">
       <div class="search-input-wrap">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" class="search-input" placeholder="Search products..." oninput="handleSearch(this.value)" autofocus>
+        <input type="text" class="search-input" placeholder="Search products..." oninput="renderSearchResults(this.value)" autofocus>
         <button class="search-close" onclick="closeSearch()">✕</button>
       </div>
       <div class="search-results">

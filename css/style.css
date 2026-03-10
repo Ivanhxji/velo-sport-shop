@@ -464,11 +464,6 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 600; letter-spacing: -0
   justify-content: center;
 }
 
-.product-image-placeholder {
-  font-size: 4rem;
-  opacity: 0.15;
-}
-
 .product-badge {
   position: absolute;
   top: 16px;
