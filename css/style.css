@@ -1161,3 +1161,129 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 600; letter-spacing: -0
   transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
+
+/* ---------- COLLECTIONS ---------- */
+.collections-scroll {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.collections-scroll::-webkit-scrollbar { height: 0; }
+
+.collection-card {
+  position: relative;
+  min-width: 320px;
+  height: 180px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  transition: all var(--transition);
+}
+.collection-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.collection-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.85;
+}
+
+.collection-info {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  z-index: 1;
+}
+.collection-info h3 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.collection-info span {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.8);
+}
+
+/* ---------- PRODUCT IMAGES ---------- */
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.product-card:hover .product-image img {
+  transform: scale(1.08);
+}
+
+/* ---------- PRODUCT RATING ---------- */
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+}
+.stars {
+  color: #fbbf24;
+  letter-spacing: 1px;
+}
+.rating-count {
+  color: var(--text-muted);
+}
+
+/* ---------- MODAL IMAGE ---------- */
+.modal-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+}
+@media (max-width: 768px) {
+  .modal-image img {
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+  }
+}
+
+/* ---------- MODAL RATING ---------- */
+.modal-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.modal-rating .stars {
+  font-size: 1rem;
+}
+
+/* ---------- MODAL SAVE BADGE ---------- */
+.modal-save {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(229, 62, 62, 0.15);
+  color: #fc8181;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+/* ---------- CART ITEM IMAGE ---------- */
+.cart-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
